@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Hello World! V2"
+    return "Hello from the environment ej4c4224!"
 
 
 @app.route('/health')
