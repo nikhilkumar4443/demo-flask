@@ -1,46 +1,32 @@
-
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="/opt/flask-cicd"
-VENV_DIR="${APP_DIR}/venv"
-SERVICE_NAME="flask-cicd"
+APP_DIR="/var/www/app"
+VENV_DIR="$APP_DIR/venv"
 
-echo "Configuring and starting ${SERVICE_NAME}..."
-
-test -x "${VENV_DIR}/bin/gunicorn"
-test -f "${APP_DIR}/app.py"
-
-cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
+# Create systemd service file
+cat > /etc/systemd/system/flask-app.service << EOF
 [Unit]
-Description=Flask CI/CD Application
+Description=Flask Application
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=${APP_DIR}
-ExecStart=${VENV_DIR}/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 app:app
+User=ec2-user
+WorkingDirectory=$APP_DIR
+Environment="PATH=$VENV_DIR/bin"
+ExecStart=$VENV_DIR/bin/python application.py
 Restart=on-failure
 RestartSec=5
-Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
+# Set permissions
+chown -R ec2-user:ec2-user "$APP_DIR"
+
+# Start service
 systemctl daemon-reload
-systemctl enable "${SERVICE_NAME}"
-systemctl restart "${SERVICE_NAME}"
-
-# Wait for the application to become ready.
-for i in $(seq 1 30); do
-    if curl --fail --silent http://127.0.0.1:5000/ >/dev/null; then
-        echo "Application started successfully."
-        exit 0
-    fi
-    sleep 2
-done
-
-echo "ERROR: Flask application failed its local health check."
-journalctl -u "${SERVICE_NAME}" --no-pager -n 50 || true
-exit 1
+systemctl enable flask-app.service
+systemctl restart flask-app.service

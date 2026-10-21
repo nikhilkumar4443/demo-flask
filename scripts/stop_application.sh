@@ -1,16 +1,9 @@
-
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="flask-cicd"
+# Stop and disable service if it exists
+systemctl stop flask-app.service 2>/dev/null || true
+systemctl disable flask-app.service 2>/dev/null || true
 
-echo "Stopping ${SERVICE_NAME}..."
-
-if systemctl is-active --quiet "${SERVICE_NAME}"; then
-    systemctl stop "${SERVICE_NAME}"
-    echo "Service stopped successfully."
-else
-    echo "Service is not running; nothing to stop."
-fi
-
-exit 0
+# Kill any process on port 8000
+lsof -ti:8000 | xargs kill -9 2>/dev/null || true

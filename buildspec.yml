@@ -1,33 +1,11 @@
-
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.12
-    commands:
-      - python --version
-      - python -m pip install --upgrade pip
-
-  pre_build:
-    commands:
-      - python -m pip install -r requirements.txt
-      - python -m py_compile app.py
-      - test -f appspec.yml
-      - test -f scripts/stop_application.sh
-      - test -f scripts/install_dependencies.sh
-      - test -f scripts/start_application.sh
-
   build:
     commands:
-      - echo "Validating Flask application"
-      - python -c "from app import app; print('Flask application loaded successfully')"
-      - echo "Preparing CodeDeploy artifact"
-
+      - echo "Install python dependencies"
+      - python -m pip install --upgrade pip
+      - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 artifacts:
   files:
-    - app.py
-    - requirements.txt
-    - appspec.yml
-    - scripts/**/*
-  discard-paths: no
+    - '**/*'

@@ -3,7 +3,22 @@ os: linux
 
 files:
   - source: /
-    destination: /opt/flask-cicd
+    destination: /var/www/app
+
+permissions:
+  - object: /var/www/app
+    owner: ec2-user
+    group: ec2-user
+    mode: 755
+    type:
+      - directory
+
+  - object: /var/www/app/scripts
+    pattern: "*.sh"
+    owner: root
+    mode: 755
+    type:
+      - file
 
 hooks:
   ApplicationStop:
@@ -13,10 +28,10 @@ hooks:
 
   AfterInstall:
     - location: scripts/install_dependencies.sh
-      timeout: 300
+      timeout: 60
       runas: root
 
   ApplicationStart:
     - location: scripts/start_application.sh
-      timeout: 120
+      timeout: 300
       runas: root
