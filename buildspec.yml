@@ -1,3 +1,4 @@
+
 version: 0.2
 
 phases:
@@ -6,20 +7,22 @@ phases:
       python: 3.12
     commands:
       - python --version
-      - pip install --upgrade pip
+      - python -m pip install --upgrade pip
 
   pre_build:
     commands:
-      - pip install -r requirements.txt
+      - python -m pip install -r requirements.txt
       - python -m py_compile app.py
-      #- test -f appspec.yml
-      #- test -x scripts/stop_application.sh
-      #- test -x scripts/install_dependencies.sh
-      #- test -x scripts/start_application.sh
+      - test -f appspec.yml
+      - test -f scripts/stop_application.sh
+      - test -f scripts/install_dependencies.sh
+      - test -f scripts/start_application.sh
 
   build:
     commands:
-      - echo "Preparing Flask deployment artifact"
+      - echo "Validating Flask application"
+      - python -c "from app import app; print('Flask application loaded successfully')"
+      - echo "Preparing CodeDeploy artifact"
 
 artifacts:
   files:
@@ -27,3 +30,4 @@ artifacts:
     - requirements.txt
     - appspec.yml
     - scripts/**/*
+  discard-paths: no
