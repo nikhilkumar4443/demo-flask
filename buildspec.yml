@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - python --version
+      - pip install --upgrade pip
+
+  pre_build:
+    commands:
+      - pip install -r requirements.txt
+      - python -m py_compile app.py
+      - test -f appspec.yml
+      - test -x scripts/stop_application.sh
+      - test -x scripts/install_dependencies.sh
+      - test -x scripts/start_application.sh
+
+  build:
+    commands:
+      - echo "Preparing Flask deployment artifact"
+
+artifacts:
+  files:
+    - app.py
+    - requirements.txt
+    - appspec.yml
+    - scripts/**/*
